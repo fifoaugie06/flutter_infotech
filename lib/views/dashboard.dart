@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_infotech/providers/CategoryProvider.dart';
 import 'package:flutter_infotech/views/detailnews.dart';
@@ -9,10 +10,18 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  final categoryNameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showMaterialDialog();
+          },
+          child: Icon(Icons.add),
+        ),
         body: RefreshIndicator(
           onRefresh: () => Provider.of<CategoryProvider>(context, listen: false)
               .getCategory(),
@@ -40,6 +49,14 @@ class _DashboardState extends State<Dashboard> {
                             ),
                           );
                         },
+                        onLongPress: () {
+                          // print(dataCategory.category.data[i].id);
+                          _deleteCategory(dataCategory.category.data[i].id);
+                        },
+                        onDoubleTap: () {
+                          _updateCategory(dataCategory.category.data[i].id,
+                              dataCategory.category.data[i].titleNewsCategory);
+                        },
                         child: Card(
                           child: Padding(
                             padding: const EdgeInsets.all(
@@ -58,6 +75,93 @@ class _DashboardState extends State<Dashboard> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  _showMaterialDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Tambah Kategori"),
+        content: TextField(
+          controller: categoryNameController,
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Submit'),
+            onPressed: () {
+              Provider.of<CategoryProvider>(context, listen: false)
+                  .addCategory(categoryNameController.text)
+                  .then((value) => {
+                        if (value == 200)
+                          {print('yeay')}
+
+                        else
+                          {print('Something wrong')}
+                      });
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  _deleteCategory(int id) {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Konfirmasi"),
+        content: new Text("Anda yakin mau menghapus ?"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Delete'),
+            onPressed: () {
+              Provider.of<CategoryProvider>(context, listen: false)
+                  .deleteCategory(id.toString())
+                  .then((value) => {
+                        if (value == 200)
+                          {
+                            print('berhasil dihapus')
+
+                          }
+                        else
+                          {print('Something wrong')}
+                      });
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  _updateCategory(int id, String titleNewsCategory) {
+    categoryNameController.text = titleNewsCategory;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Update Kategori"),
+        content: TextField(
+          controller: categoryNameController,
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Submit'),
+            onPressed: () {
+              Provider.of<CategoryProvider>(context, listen: false)
+                  .updateCategory(id.toString(), categoryNameController.text)
+                  .then((value) => {
+                        if (value == 200)
+                          {print('Berhasil diupdate')}
+                        else
+                          {print('Something wrong')}
+                      });
+              Navigator.of(context).pop();
+            },
+          )
+        ],
       ),
     );
   }
